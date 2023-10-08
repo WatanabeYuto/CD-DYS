@@ -21,3 +21,6 @@ xlabel('Iterations')
 ylabel({'$\|\mathbf{x}^k-\mathbf{x}^*\|/\|\mathbf{x}^*\|$'},'Interpreter', 'latex')
 
 legend({"(a) CD-DYS","(b) CPGD ($\lambda^k = 1/\sqrt{k+1}$)","(c) CPGD ($\lambda^k = \alpha$)","(d) ACPGD ($\lambda^k = \alpha$)","(e) EXTRA","(f) DGD"},'Interpreter', 'latex')
+
+pbaspect([2 1 1])
+fontsize(15,"points")

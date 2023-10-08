@@ -10,8 +10,8 @@ maxiter = 400; % maximal iteration number
 %% objective functions
 
 lambda = 0.001; %% coefficient of the regularization term
-A = zeros(d,d,n);
-b = zeros(d,n);
+A = zeros(d*n,d*n);
+b = zeros(d*n,1);
 
 for ii = 1:n
     A((ii-1)*d+1:ii*d,(ii-1)*d+1:ii*d) = eye(d) + randn(d,d) * 0.1;
@@ -87,10 +87,9 @@ end
 cvx_begin
     variable xx(d)
     OBJ = 0;
-    for i = 1:n
-        OBJ = OBJ + 0.5 * (A(:,:,i)*xx - b(:,i) )'*(A(:,:,i)*xx - b(:,i) );
+    for ii = 1:n
+        OBJ = OBJ + obj_quad(A((ii-1)*d+1:ii*d,(ii-1)*d+1:ii*d),b((ii-1)*d+1:ii*d,1),xx);
     end
-
     OBJ = OBJ + n* lambda * norm(xx,1);
 
     minimize OBJ
@@ -99,10 +98,7 @@ cvx_end
 x_opt = xx;
 f_opt = 0;
 
-for i = 1:n
-f_opt = f_opt +  0.5 * norm( A(:,:,i)*x_opt - b(:,i) )^2;
-end
-
+f_opt = obj_quad(A,b,kron(ones(n,1),x_opt));
 f_opt = f_opt + n* lambda * norm(x_opt,1);
 
 

@@ -4,7 +4,7 @@ function [x,y,error,res] = consensus_FLiP_ADMM(cliques,W, WW, A, b, lambda, n, d
     Qi = sum(W,1);
     
     for i = 1:n
-        L_fi(i,1) = max(eig(A(:,:,i)'*A(:,:,i)));
+        L_fi(i,1) = max(eig(A((i-1)*d+1:i*d,(i-1)*d+1:i*d)'*A((i-1)*d+1:i*d,(i-1)*d+1:i*d)));
     end
 
     if para_flag
@@ -30,7 +30,7 @@ function [x,y,error,res] = consensus_FLiP_ADMM(cliques,W, WW, A, b, lambda, n, d
 
     inv_for_prox_quad = zeros(d,d,n);
     for i = 1:n
-        inv_for_prox_quad(:,:,i) = inv( A(:,:,i)'*A(:,:,i) + 1/alpha(i,1) * eye(d));
+        inv_for_prox_quad(:,:,i) = inv( A((i-1)*d+1:i*d,(i-1)*d+1:i*d)'*A((i-1)*d+1:i*d,(i-1)*d+1:i*d) + 1/alpha(i,1) * eye(d));
     end
 
     x = zeros(d,n,maxiter);
@@ -62,7 +62,7 @@ function [x,y,error,res] = consensus_FLiP_ADMM(cliques,W, WW, A, b, lambda, n, d
         x(:,:,kk+1) = reshape(tmp,[d,n]);
 
         for l = 1:length(cliques)
-            x_Cl = kron(WW{l},eye(d)) * reshape(x(:,:,kk+1),[],1);
+            x_Cl = kron(WW{l},eye(d)) * reshape(x(:,:,kk),[],1);
 
             %% projection
             tmp_yl = 1/length(cliques{l}) * kron(ones(length(cliques{l}),1),eye(d))' *  (y{l}(:,kk) - beta * ( - u{l}(:,kk) - gamma_i * ( x_Cl - y{l}(:,kk)) ) );
@@ -77,7 +77,7 @@ function [x,y,error,res] = consensus_FLiP_ADMM(cliques,W, WW, A, b, lambda, n, d
             u{l}(:,kk+1) = u{l}(:,kk) + phi_i* gamma_i * (x_Cl - y{l}(:,kk+1)); 
         end
 
-        res(kk,1) = obj_quad(A,b,reshape(x(:,:,kk),[],1));
+        res(kk,1) = obj_quad(A,b,reshape(x(:,:,kk),[],1))+ lambda * norm(reshape(x(:,:,kk),[],1),1);
         res(kk,1) = abs(res(kk,1)-f_opt)/f_opt;
 
 

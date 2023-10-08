@@ -87,13 +87,13 @@ for i = 1:n
     x0(:,i) = randn(d,1)*10;
 end
 
+%% compute optimimal solution via CVX
 cvx_begin
     variable xx(d)
     OBJ = 0;
-    for i = 1:n
-        OBJ = OBJ +  0.5 * (A(:,:,i)*xx - b(:,i) )'*(A(:,:,i)*xx - b(:,i) );
+    for ii = 1:n
+        OBJ = OBJ + obj_quad(A((ii-1)*d+1:ii*d,(ii-1)*d+1:ii*d),b((ii-1)*d+1:ii*d,1),xx);
     end
-
     OBJ = OBJ + n* lambda * norm(xx,1);
 
     minimize OBJ
@@ -102,8 +102,5 @@ cvx_end
 x_opt = xx;
 f_opt = 0;
 
-for i = 1:n
-f_opt = f_opt +  0.5 * norm( A(:,:,i)*xx - b(:,i) )^2;
-end
-
-f_opt = f_opt + n* lambda * norm(xx,1);
+f_opt = obj_quad(A,b,kron(ones(n,1),x_opt));
+f_opt = f_opt + n* lambda * norm(x_opt,1);

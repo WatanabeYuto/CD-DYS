@@ -2,7 +2,7 @@
 
 params_ex1
 
-[x,y,error,fval,constraints_violate] = CD_DYS(cliques,D, DD, A, b, lambda, n, d, G, x0, maxiter, x_opt, f_opt);
+[x,y,error,res] = CD_DYS(cliques,D, DD, A, b, lambda, n, d, G, x0, maxiter, x_opt, f_opt);
 
 %% {true,false} = {fixed,diminishing} step size
 
