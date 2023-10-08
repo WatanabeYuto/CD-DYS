@@ -1,13 +1,13 @@
 %% plot
 figure;
 
-len = length(fval(1:end));
+len = length(res(1:end));
 
-semilogy([1:len],fval(1:len))
+semilogy([1:len],res(1:len))
 hold on
-semilogy([1:len],fval_e(1:len))
-semilogy([1:len],fval_extra(1:len))
-semilogy([1:len],fval_fl(1:len))
+semilogy([1:len],res(1:len))
+semilogy([1:len],res(1:len))
+semilogy([1:len],res(1:len))
 
 % hold off
 xlim([1 len])

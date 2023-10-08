@@ -1,4 +1,4 @@
-%% Parameters
+% Parameters
 
 clear all;
 
@@ -14,8 +14,8 @@ A = zeros(d,d,n);
 b = zeros(d,n);
 
 for ii = 1:n
-    A(:,:,ii) = eye(d) + randn(d,d) * 0.1;
-    b(:,ii) = randn(d,1); 
+    A((ii-1)*d+1:ii*d,(ii-1)*d+1:ii*d) = eye(d) + randn(d,d) * 0.1;
+    b((ii-1)*d+1:ii*d,1) = randn(d,1); 
 end
 
 %% initial condition

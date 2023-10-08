@@ -1,17 +1,7 @@
-function [x,y,error,fval,constraints_violate] = CPGD(cliques,W, WW, A, b, lambda, n, d, G, x0, maxiter, x_opt,f_opt, para_flag)
-
+function [x,y,error,res] = CPGD(cliques,W, WW, A, b, lambda, n, d, G, x0, maxiter, x_opt,f_opt, stepsize_flag)
     %% algorithmic params
-    % gamma_i = 1;
-    % phi_i = 1;
-    L_fi = zeros(n,1);
-    for i = 1:n
-        L_fi(i,1) = max(eig(A(:,:,i)'*A(:,:,i)));
-    end
-    % alpha = 2/max(L_fi)*0.99;
     alpha = 0.01;
-
-    Qi = sum(W,1);
-    
+    Qi = sum(W,1);    
     x = zeros(d,n,maxiter);
     x(:,:,1) = x0;
 
@@ -24,37 +14,23 @@ function [x,y,error,fval,constraints_violate] = CPGD(cliques,W, WW, A, b, lambda
 
         u{l} = zeros(length(cliques{l})*d, maxiter); 
     end
-    % A_diag = zeros(size)
-    A_diag = zeros(n*d,n*d);
-    b_vec = zeros(n*d,1);
-    for i = 1:n
-        A_diag((i-1)*d+1:i*d,(i-1)*d+1:i*d) = A(:,:,i);
-        b_vec((i-1)*d+1:i*d,1) = b(:,i);
-    end
 
     error = zeros(maxiter,1);
-    fval = zeros(maxiter,1);
-    constraints_violate = zeros(maxiter,1);
+    res = zeros(maxiter,1);
+
+    p = 10;
 
     for kk = 1:maxiter-1
-        % WTy = zeros(d*n,1);
-        % WTu = zeros(d*n,1);
-        % for l = 1:length(cliques) 
-        %     WTy = WTy + kron(WW{l}',eye(d)) * y{l}(:,kk);
-        %     % WTu = WTu + kron(WW{l}',eye(d)) * u{l}(:,kk);
-        % end
-        if para_flag
-            x_plus = reshape(x(:,:,kk),[],1) - alpha *  A_diag'*( A_diag*reshape(x(:,:,kk),[],1) - b_vec );
-        else
-            x_plus = reshape(x(:,:,kk),[],1) - 1/sqrt(kk) *  A_diag'*( A_diag*reshape(x(:,:,kk),[],1) - b_vec );
-        end
-        
-        % for i = 1:n
-        %     tmp = 1/Qi(i) *  WTy(d*(i-1)+1:d*i,:);
-        %     x(:,i,kk) = prox_l1(tmp, lambda*alpha/Qi(i));
-        % end
 
-        for tt = 1:10
+        if stepsize_flag
+            %% fixed stepsize
+            x_plus = reshape(x(:,:,kk),[],1) - alpha *  grad_quad(A,b,reshape(x(:,:,kk),[],1));
+        else
+            %% diminishing stepsize
+            x_plus = reshape(x(:,:,kk),[],1) - 1/sqrt(kk) * grad_quad(A,b,reshape(x(:,:,kk),[],1));
+        end
+
+        for tt = 1:p
             for l = 1:length(cliques)
                 x_Cl = kron(WW{l},eye(d)) * x_plus;
                 
@@ -76,31 +52,17 @@ function [x,y,error,fval,constraints_violate] = CPGD(cliques,W, WW, A, b, lambda
             x(:,i,kk+1) = x_plus(d*(i-1)+1:d*i,1);
         end
 
-        constraints_violate(kk,1) = sqrt(constraints_violate(kk,1));
-
-        for i = 1:n
-            fval(kk,1) = fval(kk,1) + 0.5 * norm( A(:,:,i) * x(:,i,kk) - b(:,i) )^2;
-        end
-
-        fval(kk,1) = abs(fval(kk,1)-f_opt)/f_opt;
+        res(kk,1) = obj_quad(A,b,reshape(x(:,:,kk),[],1));
+        res(kk,1) = abs(res(kk,1)-f_opt)/f_opt;
 
         for i = 1:n
             error(kk,1) = error(kk,1) + norm(x_opt - x(:,i,kk))^2;
         end
 
         error(kk,1) = sqrt(error(kk,1))/norm(kron(ones(n,1),x_opt));
-        [kk, error(kk,1), fval(kk,1),constraints_violate(kk,1)]
+
+        tmp=["k:", kk, "Objective residual:", res(kk,1), "Error:", error(kk,1)];
+        disp(tmp)
+
     end
-end
-
-function vv = prox_l1(ww, ll)
-    I = abs(ww) > ll; %% logical 配列を生成
-    vv = zeros(size(ww));
-
-    vv(I) = ww(I) - ll* sign(ww(I));
-end
-
-function vv = prox_quad(vec, inv, AA, bb, eta)
-    vv = inv * ( AA'*bb + 1/eta * vec );
-    % vv = ( A'*A + 1/eta *eye(length(b)) ) \ ( A'*b + 1/eta * vec ); 
 end

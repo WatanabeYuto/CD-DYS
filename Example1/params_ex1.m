@@ -10,12 +10,12 @@ maxiter  = 3000; % maximal iteration number
 %% objective functions
 
 lambda = 0; %% coefficient of the regularization term
-A = zeros(d,d,n);
-b = zeros(d,n);
+A = zeros(d*n,d*n);
+b = zeros(d*n,1);
 
 for ii = 1:n
-    A(:,:,ii) = eye(d) + randn(d,d) * 0.1;
-    b(:,ii) = randn(d,1); 
+    A((ii-1)*d+1:ii*d,(ii-1)*d+1:ii*d) = eye(d) + randn(d,d) * 0.1;
+    b((ii-1)*d+1:ii*d,1) = randn(d,1); 
 end
 
 %% initial condition
