@@ -1,11 +1,11 @@
-function [x,y,error,fval] = ACPGD(cliques,D, DD, A, b, lambda, n, d, G, x0, maxiter, x_opt,f_opt, stepsize_flag)
+function [x,y,error,res] = ACPGD(cliques,D, DD, A, b, lambda, n, d, G, x0, maxiter, x_opt,f_opt, stepsize_flag)
 
     %% algorithmic params
     % gamma_i = 1;
     % phi_i = 1;
     L_fi = zeros(n,1);
     for i = 1:n
-        L_fi(i,1) = max(eig(A(:,:,i)'*A(:,:,i)));
+        L_fi(i,1) = max(eig(A((i-1)*d+1:i*d,(i-1)*d+1:i*d)'*A((i-1)*d+1:i*d,(i-1)*d+1:i*d)));
     end
 
     % alpha = 2/max(L_fi)*0.99;
