@@ -1,4 +1,4 @@
-function [x,y,error,res] = CD_DYS(cliques, D, DD, A, b, lambda, n, d, G, x0, maxiter, x_opt, f_opt)
+function [x,y,error,res] = CD_DYS(cliques, D, DD, obj_params, lambda, n, d, G, x0, maxiter, x_opt, f_opt)
 
     %% algorithmic params
     % gamma_i = 1;
@@ -8,7 +8,7 @@ function [x,y,error,res] = CD_DYS(cliques, D, DD, A, b, lambda, n, d, G, x0, max
     %     L_fi(i,1) = max(eig(A((i-1)*d+1:i*d,(i-1)*d+1:i*d)'*A((i-1)*d+1:i*d,(i-1)*d+1:i*d)'));
     % end
 
-    alpha = 2/max(eig(A'*A))*0.99;
+    alpha = 2/max(eig(obj_params.A'*obj_params.A))*0.99;
 
     Qi = sum(D,1);
     
@@ -47,14 +47,14 @@ function [x,y,error,res] = CD_DYS(cliques, D, DD, A, b, lambda, n, d, G, x0, max
 
             %% y^{k+1}
             %% projection onto D_l
-            tmp1 = 2*x_Cl - y{l}(:,kk) - kron(DD{l} * inv(D'*D), eye(d)) * alpha * grad_quad(A,b,reshape(x(:,:,kk),[],1));
+            tmp1 = 2*x_Cl - y{l}(:,kk) - kron(DD{l} * inv(D'*D), eye(d)) * alpha * grad_quad(obj_params.A,obj_params.b,reshape(x(:,:,kk),[],1));
             tmp2 = 1/length(cliques{l}) * kron(ones(1,length(cliques{l})),eye(d)) * tmp1;
 
             %% z^{k+1}
             y{l}(:,kk+1) = y{l}(:,kk) - x_Cl + kron(ones(length(cliques{l}),1),tmp2);
         end
 
-        res(kk,1) = obj_quad(A,b,reshape(x(:,:,kk),[],1))+ lambda * norm(reshape(x(:,:,kk),[],1),1);
+        res(kk,1) = obj_quad(obj_params.A,obj_params.b,reshape(x(:,:,kk),[],1))+ lambda * norm(reshape(x(:,:,kk),[],1),1);
         res(kk,1) = abs(res(kk,1)-f_opt)/f_opt;
 
         for i = 1:n

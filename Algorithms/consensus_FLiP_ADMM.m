@@ -1,10 +1,10 @@
-function [x,y,error,res] = consensus_FLiP_ADMM(cliques,W, WW, A, b, lambda, n, d, G, x0, maxiter, x_opt,f_opt, para_flag)
+function [x,y,error,res] = consensus_FLiP_ADMM(cliques,W, WW, obj_params, lambda, n, d, G, x0, maxiter, x_opt,f_opt, para_flag)
 
     %% algorithmic params
     Qi = sum(W,1);
     
     for i = 1:n
-        L_fi(i,1) = max(eig(A((i-1)*d+1:i*d,(i-1)*d+1:i*d)'*A((i-1)*d+1:i*d,(i-1)*d+1:i*d)));
+        L_fi(i,1) = max(eig(obj_params.A((i-1)*d+1:i*d,(i-1)*d+1:i*d)'*obj_params.A((i-1)*d+1:i*d,(i-1)*d+1:i*d)));
     end
 
     if para_flag
@@ -30,7 +30,7 @@ function [x,y,error,res] = consensus_FLiP_ADMM(cliques,W, WW, A, b, lambda, n, d
 
     inv_for_prox_quad = zeros(d,d,n);
     for i = 1:n
-        inv_for_prox_quad(:,:,i) = inv( A((i-1)*d+1:i*d,(i-1)*d+1:i*d)'*A((i-1)*d+1:i*d,(i-1)*d+1:i*d) + 1/alpha(i,1) * eye(d));
+        inv_for_prox_quad(:,:,i) = inv( obj_params.A((i-1)*d+1:i*d,(i-1)*d+1:i*d)'*obj_params.A((i-1)*d+1:i*d,(i-1)*d+1:i*d) + 1/alpha(i,1) * eye(d));
     end
 
     x = zeros(d,n,maxiter);
@@ -58,7 +58,7 @@ function [x,y,error,res] = consensus_FLiP_ADMM(cliques,W, WW, A, b, lambda, n, d
             WTu = WTu + kron(WW{l}',eye(d)) * u{l}(:,kk);
         end
 
-        tmp = reshape(x(:,:,kk),[],1) - kron(diag(alpha),eye(d)) * (grad_quad(A,b,reshape(x(:,:,kk),[],1)) + WTu + gamma_i * (kron(diag(Qi),eye(d)) * reshape(x(:,:,kk),[],1) - WTy));
+        tmp = reshape(x(:,:,kk),[],1) - kron(diag(alpha),eye(d)) * (grad_quad(obj_params.A,obj_params.b,reshape(x(:,:,kk),[],1)) + WTu + gamma_i * (kron(diag(Qi),eye(d)) * reshape(x(:,:,kk),[],1) - WTy));
         x(:,:,kk+1) = reshape(tmp,[d,n]);
 
         for l = 1:length(cliques)
@@ -77,7 +77,7 @@ function [x,y,error,res] = consensus_FLiP_ADMM(cliques,W, WW, A, b, lambda, n, d
             u{l}(:,kk+1) = u{l}(:,kk) + phi_i* gamma_i * (x_Cl - y{l}(:,kk+1)); 
         end
 
-        res(kk,1) = obj_quad(A,b,reshape(x(:,:,kk),[],1))+ lambda * norm(reshape(x(:,:,kk),[],1),1);
+        res(kk,1) = obj_quad(obj_params.A,obj_params.b,reshape(x(:,:,kk),[],1))+ lambda * norm(reshape(x(:,:,kk),[],1),1);
         res(kk,1) = abs(res(kk,1)-f_opt)/f_opt;
 
 

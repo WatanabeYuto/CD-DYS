@@ -1,11 +1,11 @@
-function [x,y,error,res] = ACPGD(cliques,D, DD, A, b, lambda, n, d, G, x0, maxiter, x_opt,f_opt, stepsize_flag)
+function [x,y,error,res] = ACPGD(cliques,D, DD, obj_params, lambda, n, d, G, x0, maxiter, x_opt,f_opt, stepsize_flag)
 
     %% algorithmic params
     % gamma_i = 1;
     % phi_i = 1;
     L_fi = zeros(n,1);
     for i = 1:n
-        L_fi(i,1) = max(eig(A((i-1)*d+1:i*d,(i-1)*d+1:i*d)'*A((i-1)*d+1:i*d,(i-1)*d+1:i*d)));
+        L_fi(i,1) = max(eig(obj_params.A((i-1)*d+1:i*d,(i-1)*d+1:i*d)'*obj_params.A((i-1)*d+1:i*d,(i-1)*d+1:i*d)));
     end
 
     % alpha = 2/max(L_fi)*0.99;
@@ -36,9 +36,9 @@ function [x,y,error,res] = ACPGD(cliques,D, DD, A, b, lambda, n, d, G, x0, maxit
     for kk = 1:maxiter-1
 
         if stepsize_flag
-            x_plus = reshape(x(:,:,kk),[],1) - alpha * grad_quad(A,b,reshape(x(:,:,kk),[],1));
+            x_plus = reshape(x(:,:,kk),[],1) - alpha * grad_quad(obj_params.A,obj_params.b,reshape(x(:,:,kk),[],1));
         else
-            x_plus = reshape(x(:,:,kk),[],1) - 1/(kk) * grad_quad(A,b,reshape(x(:,:,kk),[],1));
+            x_plus = reshape(x(:,:,kk),[],1) - 1/(kk) * grad_quad(obj_params.A,obj_params.b,reshape(x(:,:,kk),[],1));
         end
         x_k_minus = x_k;
         
@@ -73,7 +73,7 @@ function [x,y,error,res] = ACPGD(cliques,D, DD, A, b, lambda, n, d, G, x0, maxit
             x(:,i,kk+1) = tmp(d*(i-1)+1:d*i,1);
         end
         
-        res(kk,1) = obj_quad(A,b,reshape(x(:,:,kk),[],1)) + lambda * norm(reshape(x(:,:,kk),[],1),1);
+        res(kk,1) = obj_quad(obj_params.A,obj_params.b,reshape(x(:,:,kk),[],1)) + lambda * norm(reshape(x(:,:,kk),[],1),1);
         res(kk,1) = abs(res(kk,1)-f_opt)/f_opt;
 
         for i = 1:n
@@ -85,16 +85,4 @@ function [x,y,error,res] = ACPGD(cliques,D, DD, A, b, lambda, n, d, G, x0, maxit
         disp(tmp)
 
     end
-end
-
-function vv = prox_l1(ww, ll)
-    I = abs(ww) > ll; %% logical 配列を生成
-    vv = zeros(size(ww));
-
-    vv(I) = ww(I) - ll* sign(ww(I));
-end
-
-function vv = prox_quad(vec, inv, AA, bb, eta)
-    vv = inv * ( AA'*bb + 1/eta * vec );
-    % vv = ( A'*A + 1/eta *eye(length(b)) ) \ ( A'*b + 1/eta * vec ); 
 end

@@ -10,12 +10,12 @@ maxiter  = 3000; % maximal iteration number
 %% objective functions
 
 lambda = 0; %% coefficient of the regularization term
-A = zeros(d*n,d*n);
-b = zeros(d*n,1);
+obj_params.A = zeros(d*n,d*n);
+obj_params.b = zeros(d*n,1);
 
 for ii = 1:n
-    A((ii-1)*d+1:ii*d,(ii-1)*d+1:ii*d) = eye(d) + randn(d,d) * 0.1;
-    b((ii-1)*d+1:ii*d,1) = randn(d,1); 
+    obj_params.A((ii-1)*d+1:ii*d,(ii-1)*d+1:ii*d) = eye(d) + randn(d,d) * 0.1;
+    obj_params.b((ii-1)*d+1:ii*d,1) = randn(d,1); 
 end
 
 %% initial condition
@@ -92,7 +92,7 @@ cvx_begin
     variable xx(d)
     OBJ = 0;
     for ii = 1:n
-        OBJ = OBJ + obj_quad(A((ii-1)*d+1:ii*d,(ii-1)*d+1:ii*d),b((ii-1)*d+1:ii*d,1),xx);
+        OBJ = OBJ + obj_quad(obj_params.A((ii-1)*d+1:ii*d,(ii-1)*d+1:ii*d),obj_params.b((ii-1)*d+1:ii*d,1),xx);
     end
     OBJ = OBJ + n* lambda * norm(xx,1);
 
@@ -102,5 +102,5 @@ cvx_end
 x_opt = xx;
 f_opt = 0;
 
-f_opt = obj_quad(A,b,kron(ones(n,1),x_opt));
+f_opt = obj_quad(obj_params.A,obj_params.b,kron(ones(n,1),x_opt));
 f_opt = f_opt + n* lambda * norm(x_opt,1);

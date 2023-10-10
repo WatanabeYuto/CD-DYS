@@ -1,4 +1,4 @@
-function [x,y,error,res] = CPGD(cliques,D, DD, A, b, lambda, n, d, G, x0, maxiter, x_opt,f_opt, stepsize_flag)
+function [x,y,error,res] = CPGD(cliques,D, DD, obj_params, lambda, n, d, G, x0, maxiter, x_opt,f_opt, stepsize_flag)
     %% algorithmic params
     alpha = 0.01;
     Qi = sum(D,1);    
@@ -24,10 +24,10 @@ function [x,y,error,res] = CPGD(cliques,D, DD, A, b, lambda, n, d, G, x0, maxite
 
         if stepsize_flag
             %% fixed stepsize
-            x_plus = reshape(x(:,:,kk),[],1) - alpha *  grad_quad(A,b,reshape(x(:,:,kk),[],1));
+            x_plus = reshape(x(:,:,kk),[],1) - alpha *  grad_quad(obj_params.A,obj_params.b,reshape(x(:,:,kk),[],1));
         else
             %% diminishing stepsize
-            x_plus = reshape(x(:,:,kk),[],1) - 1/sqrt(kk) * grad_quad(A,b,reshape(x(:,:,kk),[],1));
+            x_plus = reshape(x(:,:,kk),[],1) - 1/sqrt(kk) * grad_quad(obj_params.A,obj_params.b,reshape(x(:,:,kk),[],1));
         end
 
         %% clique-based projection
@@ -53,7 +53,7 @@ function [x,y,error,res] = CPGD(cliques,D, DD, A, b, lambda, n, d, G, x0, maxite
             x(:,i,kk+1) = x_plus(d*(i-1)+1:d*i,1);
         end
 
-        res(kk,1) = obj_quad(A,b,reshape(x(:,:,kk),[],1)) + lambda * norm(reshape(x(:,:,kk),[],1),1);
+        res(kk,1) = obj_quad(obj_params.A,obj_params.b,reshape(x(:,:,kk),[],1)) + lambda * norm(reshape(x(:,:,kk),[],1),1);
         res(kk,1) = abs(res(kk,1)-f_opt)/f_opt;
 
         for i = 1:n

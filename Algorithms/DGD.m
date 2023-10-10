@@ -1,4 +1,4 @@
-function [x,error,res] = DGD(mixing_matrix,lambda,x0,A,b,n,d,x_opt,f_opt,maxiter,stepsize_flag)
+function [x,error,res] = DGD(mixing_matrix,lambda,x0,obj_params,n,d,x_opt,f_opt,maxiter,stepsize_flag)
 
     x = zeros(n*d,maxiter);
     w = zeros(n*d,maxiter);
@@ -8,20 +8,20 @@ function [x,error,res] = DGD(mixing_matrix,lambda,x0,A,b,n,d,x_opt,f_opt,maxiter
     error = zeros(maxiter,1);
     res = zeros(maxiter,1);
 
-    % alpha = 0.99 * (1 + min(eig(mixing_matrix))) / max(eig(AA'*AA)) ;
+    % alpha = 0.99 * (1 + min(eig(mixing_matrix))) / max(eig(obj_params.A'*obj_params.A)) ;
     alpha=0.01;
 
     for kk = 1:maxiter-1
 
         if stepsize_flag
-            x(:,kk+1) = kron(mixing_matrix, eye(d)) * x(:,kk) - alpha * grad_quad(A,b,x(:,kk));
+            x(:,kk+1) = kron(mixing_matrix, eye(d)) * x(:,kk) - alpha * grad_quad(obj_params.A,obj_params.b,x(:,kk));
         else
-            x(:,kk+1) = kron(mixing_matrix, eye(d)) * x(:,kk) - 1/sqrt(kk) * grad_quad(A,b,x(:,kk)); 
+            x(:,kk+1) = kron(mixing_matrix, eye(d)) * x(:,kk) - 1/sqrt(kk) * grad_quad(obj_params.A,obj_params.b,x(:,kk)); 
         end
         % x(:,kk+1) = prox_l1( vec , lambda * alpha );
         % w(:,kk+1) = w(:,kk) + 0.5 * kron((eye(n)-mixing_matrix), eye(d)) * x(:,kk);
 
-        res(kk,1) =  obj_quad(A,b,x(:,kk)) + lambda * norm(x(:,kk),1);
+        res(kk,1) =  obj_quad(obj_params.A,obj_params.b,x(:,kk)) + lambda * norm(x(:,kk),1);
 
         res(kk,1) = abs(res(kk,1)-f_opt)/f_opt;
 
